@@ -5,3 +5,7 @@ CMakeF*
 cmake_*
 code
 makefile
+*.in
+*.out
+*.ans
+
