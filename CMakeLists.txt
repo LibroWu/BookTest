@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 project(code)
 set(CMAKE_CXX_STANDARD 14)
-add_executable(code src.cpp)
+add_executable(code src_dll.cpp ull.h)
+target_link_libraries(code ${PROJECT_SOURCE_DIR}/libUll.so)

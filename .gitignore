@@ -1,0 +1,7 @@
+.idea
+cmake-*
+CMakeF*
+*.file
+cmake_*
+code
+makefile
