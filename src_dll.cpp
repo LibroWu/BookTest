@@ -7,11 +7,6 @@ using namespace std;
 
 //Ull ull("a.file");
 
-void create_file(std::string file_name) {
-    std::fstream file(file_name, std::fstream::out);
-    file.close();
-}
-
 int main(){
     //initialization}
     int n;
