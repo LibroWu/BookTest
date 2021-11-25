@@ -74,15 +74,15 @@ int main(){
             } else {
                 if (vet->size()==1) cout<<"null\n";
                 else {
-                    sort(vet->begin()+1,vet->end());
+                    sort(vet->begin(),vet->end());
                     for (size_t i = 1; i < vet->size(); i++)
                     {
+                        if (vet->operator[](i)==-1) continue;
                         cout<<vet->operator[](i)<<((i==vet->size()-1)?'\n':' ');
                     }
                 }
             }
             delete vet;
         }
-    }
-    
+    }   
 }

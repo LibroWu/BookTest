@@ -1,28 +1,24 @@
 //
-// Created by Libro on 2021/4/9.
+// Created by Leon on 2021/4/9.
 //
 
 #ifndef BPT_BPT_HPP
 #define BPT_BPT_HPP
-#define debugs
-
-#ifdef debugs
 
 #include <iostream>
 
 using std::cin;
 using std::cout;
-#endif
 
 #include "MemoryRiver.hpp"
 #include <cstring>
-#include <vector>
-#include <algorithm>
+#include "vector.hpp"
+#include "Algorithm.h"
 
-using std::lower_bound;
-using std::upper_bound;
-using std::vector;
-
+#define debugs
+using LaMetropole::lower_bound;
+using LaMetropole::upper_bound;
+using LaMetropole::vector;
 //support duplicate key
 //by using some tricks
 template<class T, class U, int M, int L, class Compare=std::less<T>>
@@ -41,6 +37,24 @@ private:
         int child[M + 2];
 
         crystalNode() : number(0), is_leaf(0) {}
+
+        crystalNode(const crystalNode &other) : is_leaf(other.is_leaf), number(other.number) {
+            for (int i = 0; i < number; ++i) {
+                Fence[i] = other.Fence[i];
+                child[i] = other.child[i];
+            }
+        }
+
+        crystalNode &operator=(const crystalNode &other) {
+            if (this == &other) return *this;
+            is_leaf = other.is_leaf;
+            number = other.number;
+            for (int i = 0; i < number; ++i) {
+                Fence[i] = other.Fence[i];
+                child[i] = other.child[i];
+            }
+            return *this;
+        }
 
 #ifdef debugs
 
@@ -67,10 +81,29 @@ private:
 
         indexNode() : number(0), next(0), pre(0) {}
 
+        indexNode(const indexNode &other) : next(other.next), pre(other.pre), number(other.number) {
+            for (int i = 0; i < number; ++i) {
+                v[i] = other.v[i];
+                index[i] = other.index[i];
+            }
+        }
+
+        indexNode &operator=(const indexNode &other) {
+            if (this == &other) return *this;
+            next = other.next;
+            pre = other.pre;
+            number = other.number;
+            for (int i = 0; i < number; ++i) {
+                v[i] = other.v[i];
+                index[i] = other.index[i];
+            }
+            return *this;
+        }
+
         //not nullptr if split
         indexNode *insert(const T &t, const U &ind) {
             int pos = lower_bound(v, v + number, t) - v;
-            if (t==v[pos]) return nullptr;
+            if (t == v[pos]) return nullptr;
             for (int i = number; i > pos; --i) {
                 v[i] = v[i - 1];
                 index[i] = index[i - 1];
@@ -383,6 +416,15 @@ public:
         indexMemory.initialise();
     }
 
+#ifdef cache
+
+    void initialize() {
+        crystalMemory.initialize();
+        indexMemory.initialize();
+    }
+
+#endif
+
     void insert(const T &t, const U &index) {
         int root_pos;
         crystalMemory.get_info(root_pos, 3);
@@ -434,7 +476,7 @@ public:
         return root_pos == 0;
     }
 
-    void modify(const T &t, U &u) {
+    void modify(const T &t, const U &u) {
         int pos, num;
         crystalMemory.get_info(pos, 3);
         crystalNode tmp;
@@ -446,8 +488,8 @@ public:
                 indexMemory.read(ind, tmp.child[num]);
                 int N = lower_bound(ind.v, ind.v + ind.number, t) - ind.v;
                 if (ind.v[N] == t) {
-                    ind.index[N]=u;
-                    indexMemory.update(ind,tmp.child[num]);
+                    ind.index[N] = u;
+                    indexMemory.update(ind, tmp.child[num]);
                 }
                 //not found
                 return;
@@ -467,7 +509,7 @@ public:
                 indexNode ind;
                 indexMemory.read(ind, tmp.child[num]);
                 int N = lower_bound(ind.v, ind.v + ind.number, t) - ind.v;
-                if (N<ind.number && ind.v[N] == t) return ind.index[N];
+                if (N < ind.number && ind.v[N] == t) return ind.index[N];
                 //not found
                 return U();
             }
@@ -476,7 +518,7 @@ public:
         return U();
     }
 
-    vector<U>* multipleFind(const T& t) {
+    bool count(const T &t) {
         int pos, num;
         crystalMemory.get_info(pos, 3);
         crystalNode tmp;
@@ -487,15 +529,35 @@ public:
                 indexNode ind;
                 indexMemory.read(ind, tmp.child[num]);
                 int N = lower_bound(ind.v, ind.v + ind.number, t) - ind.v;
-                if (N<ind.number && ind.v[N] == t) {
-                    vector<U>* tmp=new vector<U>;
-                    while (ind.v[N].key==t.key) {
+                if (N < ind.number && ind.v[N] == t) return true;
+                //not found
+                return false;
+            }
+            pos = tmp.child[num];
+        }
+        return false;
+    }
+
+    vector<U> *multipleFind(const T &t) {
+        int pos, num;
+        crystalMemory.get_info(pos, 3);
+        crystalNode tmp;
+        while (pos > 0) {
+            crystalMemory.read(tmp, pos);
+            num = upper_bound(tmp.Fence, tmp.Fence + tmp.number - 1, t) - tmp.Fence;
+            if (tmp.is_leaf) {
+                indexNode ind;
+                indexMemory.read(ind, tmp.child[num]);
+                int N = lower_bound(ind.v, ind.v + ind.number, t) - ind.v;
+                if (N < ind.number && ind.v[N] == t) {
+                    vector<U> *tmp = new vector<U>;
+                    while (ind.v[N].key == t.key) {
                         tmp->push_back(ind.index[N]);
                         ++N;
-                        if (N==ind.number) {
-                            if (ind.next==0) break;
-                            indexMemory.read(ind,ind.next);
-                            N=0;
+                        if (N == ind.number) {
+                            if (ind.next == 0) break;
+                            indexMemory.read(ind, ind.next);
+                            N = 0;
                         }
                     }
                     return tmp;
@@ -512,6 +574,28 @@ public:
         crystalMemory.initialise();
         indexMemory.initialise();
     }
+
+#ifdef back_up
+
+    void setVersion(int Tot, int Inc) {
+        crystalMemory.setVersion(Tot,Inc);
+        indexMemory.setVersion(Tot,Inc);
+    }
+
+    void rebuild(){
+
+    }
+
+    void backup(int flag){
+        crystalMemory.backup(flag);
+        indexMemory.backup(flag);
+    }
+
+    void rollBack(int Tot, int Inc){
+        crystalMemory.rollBack(Tot,Inc);
+        indexMemory.rollBack(Tot,Inc);
+    }
+#endif
 
 #ifdef debugs
 
@@ -540,6 +624,27 @@ public:
                     que[r++] = t.child[i];
                 }
             }
+        }
+    }
+
+    void printChain() {
+        int pos, num;
+        crystalMemory.get_info(pos, 3);
+        crystalNode tmp;
+        while (pos > 0) {
+            crystalMemory.read(tmp, pos);
+            if (tmp.is_leaf) {
+                indexNode ind;
+                int indPos = tmp.child[0];
+                while (indPos) {
+                    indexMemory.read(ind, indPos);
+                    ind.print();
+                    cout << "\n";
+                    indPos = ind.next;
+                }
+                break;
+            }
+            pos = tmp.child[0];
         }
     }
 
