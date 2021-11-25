@@ -2,6 +2,7 @@
 #include<fstream>
 #include<vector>
 #include<cstring>
+#include<algorithm>
 #include"BPT.hpp"
 
 using namespace std;
@@ -60,13 +61,12 @@ int main(){
         if (s=="insert")
         {
             cin>>value;
-            ull.insert(IndexNode(index.c_str(),-1),-1);
             ull.insert(IndexNode(index.c_str(),value),value);
         } else if (s=="delete") {
             cin>>value;
             ull.Delete(IndexNode(index.c_str(),value));
         } else {
-            vector<int> * vet = ull.multipleFind(IndexNode(index.c_str(),-1));
+            vector<int> * vet = ull.multipleFind(IndexNode(index.c_str(),0));
             if (vet==nullptr)
             {
                 cout<<"null\n";
@@ -74,13 +74,12 @@ int main(){
                 if (vet->size()==1) cout<<"null\n";
                 else {
                     sort(vet->begin(),vet->end());
-                    for (size_t i = 1; i < vet->size(); i++)
+                    for (size_t i = 0; i < vet->size(); i++)
                     {
                         cout<<vet->operator[](i)<<((i==vet->size()-1)?'\n':' ');
                     }
                 }
             }
-            
             delete vet;
         }
     }
