@@ -8,4 +8,4 @@ makefile
 *.in
 *.out
 *.ans
-
+CMakeCa*
