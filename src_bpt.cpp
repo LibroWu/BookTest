@@ -71,14 +71,13 @@ int main(){
             {
                 cout<<"null\n";
             } else {
-                if (vet->size()==1) cout<<"null\n";
-                else {
+                
                     sort(vet->begin(),vet->end());
                     for (size_t i = 0; i < vet->size(); i++)
                     {
                         cout<<vet->operator[](i)<<((i==vet->size()-1)?'\n':' ');
                     }
-                }
+                
             }
             delete vet;
         }
